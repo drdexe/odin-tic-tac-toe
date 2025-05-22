@@ -1,5 +1,5 @@
 const Gameboard = (function() {
-  const size = 3;
+  const size = 4;
   const board = [];
 
   for (let i = 0; i < size; i++) {
@@ -35,7 +35,8 @@ function GameController(player1, player2) {
   }
 
   const getActivePlayer = () => {
-    return getEmptyCellsCount() % 2 === 0 ? player2 : player1; 
+    const totalCellsCount = board.length ** 2;
+    return (totalCellsCount - getEmptyCellsCount()) % 2 === 0 ? player1 : player2; 
   }
 
   const getWinner = () => {
