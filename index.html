@@ -9,6 +9,35 @@
 </head>
 <body>
   <h1>Tic Tac Toe</h1>
+  <form>
+    <div class="player-cards">
+      <div class="player blue">
+        <input type="text" placeholder="Name" value="Player 1">
+        <input type="text" value="X" minlength="1" maxlength="1">
+        <select name="type" id="type">
+          <option value="human">Human</option>
+          <option value="ai-easy">AI - Easy</option>
+          <option value="ai-hard">AI - Hard</option>
+        </select>
+      </div>
+      <div class="player orange">
+        <input type="text" placeholder="Name" value="Player 2">
+        <input type="text" value="O" minlength="1" maxlength="1">
+        <select name="type" id="type">
+          <option value="human">Human</option>
+          <option value="ai-easy">AI - Easy</option>
+          <option value="ai-hard">AI - Hard</option>
+        </select>
+      </div>
+    </div>
+    <div class="play">
+      <label for="size">Select Board Size:</label>
+      <input type="number" value="3" min="1" max="5">
+      <button type="submit">PLAY!</button>
+    </div>
+  </form>
+
+  <div class="turn">turn.</div>
   <div class="board"></div>
 </body>
 </html>

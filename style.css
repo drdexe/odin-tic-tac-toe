@@ -18,6 +18,7 @@
 
 :root {
   --dark-primary: #1f1b24;
+  --dark-secondary: #2f2b34;
   --purple: #bb86fc;
   --blue: #34c3be;
   --orange: #f2b138;
@@ -29,11 +30,100 @@ body {
   color: var(--purple);
 }
 
+h1 {
+  text-align: center;
+  font-size: 3rem;
+}
+
+.player-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+.player {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .1rem;
+  padding: 1rem;
+  border-radius: 2rem;
+}
+
+.player input,
+.player select {
+  opacity: .9;
+  font: inherit;
+  padding: .5rem;
+}
+
+.player input:first-child {
+  flex: 1;
+}
+
+.player input:nth-child(2) {
+  width: 2ch;
+  text-align: center;
+}
+
+.player select {
+  width: 100%;
+}
+
+.player.blue {
+  background-color: var(--blue);
+}
+
+.player.orange {
+  background-color: var(--orange);
+}
+
+.play {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  font-size: 1.5rem;
+  width: 300px;
+  margin: 2rem auto;
+}
+
+.play input {
+  font: inherit;
+  text-align: right;
+}
+
+.play button {
+  font: inherit;
+  font-size: 1.5rem;
+  padding: 1rem;
+  border: none;
+  border-radius: 1rem;
+  background-color: #d63384;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  cursor: pointer;
+}
+
+.turn {
+  width: 300px;
+  margin: 5rem auto 2.5rem;
+  padding: 1rem;
+  border-radius: .5rem;
+  text-align: center;
+  background-color: var(--dark-secondary);
+  box-shadow: 0 10px 10px rgba(0, 0, 0, .3);
+}
+
 .board {
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
   height: 500px;
   width: 500px;
+  margin: 0 auto;
   position: relative;
 }
 
@@ -57,6 +147,10 @@ body {
   background-color: var(--dark-primary);;
   border: 5px solid gray;
   cursor: pointer;
+}
+
+.cell:hover {
+  background-color: var(--dark-secondary);
 }
 
 .cell.blue {
