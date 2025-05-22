@@ -1,17 +1,68 @@
+@font-face {
+  font-family: "robotoregular";
+  src:
+    url("fonts/roboto-variablefont_wdthwght-webfont.woff2") format("woff2"),
+    url("fonts/roboto-variablefont_wdthwght-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "varela_roundregular";
+  src:
+    url("fonts/varelaround-regular-webfont.woff2") format("woff2"),
+    url("fonts/varelaround-regular-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --dark-primary: #1f1b24;
+  --purple: #bb86fc;
+  --blue: #34c3be;
+  --orange: #f2b138;
+}
+
+body {
+  font-family: "varela_roundregular", sans-serif;
+  background-color: var(--dark-primary);
+  color: var(--purple);
+}
+
 .board {
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  border: 1px solid black;
   height: 500px;
   width: 500px;
+  position: relative;
+}
+
+.board::after {
+  position: absolute;
+  content: "";
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  border: 5px solid var(--dark-primary);;
+  pointer-events: none;
 }
 
 .cell {
+  font: inherit;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  font-size: 2rem;
-  border: 1px solid grey;
+  font-size: 5rem;
+  background-color: var(--dark-primary);;
+  border: 5px solid gray;
   cursor: pointer;
+}
+
+.cell.blue {
+  color: var(--blue);
+}
+
+.cell.orange {
+  color: var(--orange);
 }

@@ -39,6 +39,16 @@ function GameController(player1, player2) {
     return (totalCellsCount - getEmptyCellsCount()) % 2 === 0 ? player1 : player2; 
   }
 
+  const getPossibleActions = () => {
+    const actions = [];
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board.length; j++) {
+        if(board[i][j] === "") actions.push([i, j]);
+      }
+    }
+    return actions;
+  }
+
   const getWinner = () => {
     const X = player1.marker;
     const O = player2.marker;
@@ -73,8 +83,13 @@ function GameController(player1, player2) {
 
   const playRound = (action) => {
     const [row, column] = action;
-    const activePlayer = getActivePlayer();
+    // Ignore if action is illegal or game is over
+    if (!getPossibleActions()
+      .some(arr => arr[0] === row && arr[1] === column)
+      || getWinner()
+    ) return;
 
+    const activePlayer = getActivePlayer();
     console.log(
       `Marking '${activePlayer.marker}' at row ${row}, column ${column}...`
     );
@@ -102,14 +117,13 @@ function GameController(player1, player2) {
 }
 
 (function displayController() {
-  const game = GameController(
-    Player("Player 1", "X", "Human"),
-    Player("Player 2", "O", "Human")
-  );
+  const player1 = Player("Player 1", "X", "Human");
+  const player2 = Player("Player 2", "O", "Human");
+  const game = GameController(player1, player2);
   const board = game.board;
   const boardDiv = document.querySelector(".board");
 
-  const updateScreen = () => {
+  const createCells = () => {
     boardDiv.textContent = "";
 
     board.forEach((row, i) => {
@@ -124,13 +138,24 @@ function GameController(player1, player2) {
     });
   }
 
+  const updateScreen = (cellButton) => {
+    const selectedRow = cellButton.dataset.row;
+    const selectedColumn = cellButton.dataset.column;
+    cellButton.textContent = board[+selectedRow][+selectedColumn];
+    if (player1.marker === cellButton.textContent) {
+      cellButton.style.color = "var(--blue)";
+    } else {
+      cellButton.style.color = "var(--orange)";
+    }
+  }
+
   boardDiv.addEventListener("click", (e) => {
     const selectedRow = e.target.dataset.row;
     const selectedColumn = e.target.dataset.column;
 
-    game.playRound([selectedRow, selectedColumn]);
-    updateScreen();
+    game.playRound([+selectedRow, +selectedColumn]);
+    updateScreen(e.target);
   });
 
-  updateScreen();
+  createCells();
 })();
