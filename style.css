@@ -93,6 +93,7 @@ h1 {
 .play input {
   font: inherit;
   text-align: right;
+  opacity: .9;
 }
 
 .play button {
@@ -109,6 +110,7 @@ h1 {
 }
 
 .turn {
+  visibility: hidden;
   width: 300px;
   margin: 5rem auto 2.5rem;
   padding: 1rem;
@@ -147,6 +149,7 @@ h1 {
   background-color: var(--dark-primary);;
   border: 5px solid gray;
   cursor: pointer;
+  user-select: none;
 }
 
 .cell:hover {

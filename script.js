@@ -1,5 +1,4 @@
-const Gameboard = (function() {
-  const size = 3;
+function Gameboard(size) {
   const board = [];
 
   for (let i = 0; i < size; i++) {
@@ -19,14 +18,15 @@ const Gameboard = (function() {
   }
 
   return { getBoard, markCell };
-})();
+}
 
 function Player(name, marker, type) {
   return { name, marker, type };
 }
 
-function GameController(player1, player2) {
-  const board = Gameboard.getBoard();
+function GameController(size, player1, player2) {
+  const gameboard = Gameboard(size);
+  const board = gameboard.getBoard();
 
   const getEmptyCellsCount = () => {
     return board
@@ -93,7 +93,7 @@ function GameController(player1, player2) {
     console.log(
       `Marking '${activePlayer.marker}' at row ${row}, column ${column}...`
     );
-    Gameboard.markCell(action, activePlayer.marker);
+    gameboard.markCell(action, activePlayer.marker);
     console.log(board);
     
     const winner = getWinner()
@@ -117,25 +117,38 @@ function GameController(player1, player2) {
 }
 
 (function displayController() {
-  const player1 = Player("Player 1", "X", "Human");
-  const player2 = Player("Player 2", "O", "Human");
-  const game = GameController(player1, player2);
-  const board = game.board;
+  const player1Div = document.querySelector(".player.blue");
+  const player2Div = document.querySelector(".player.orange");
+  const sizeDiv = document.querySelector(".play input");
+  const form = document.querySelector("form");
+  const inputs = form.querySelectorAll("input");
+  const nameInputs = form.querySelectorAll('input[name="name"]')
+  const markerInputs = form.querySelectorAll('input[name="marker"]');
+  const turnDiv = document.querySelector(".turn");
   const boardDiv = document.querySelector(".board");
 
-  const createCells = () => {
-    boardDiv.textContent = "";
+  let player1, player2, size, game, board;
 
-    board.forEach((row, i) => {
-      row.forEach((cell, j) => {
+  const getPlayerFromDiv = playerDiv => {
+    const name = playerDiv.querySelector('input[name="name"]').value;
+    const marker = playerDiv.querySelector('input[name="marker"]').value;
+    const type = playerDiv.querySelector('select[name="type"]').value;
+    return Player(name, marker, type);
+  }
+
+  const createCells = size => {
+    boardDiv.textContent = "";
+    boardDiv.style.gridTemplate = `repeat(${size}, 1fr) / repeat(${size}, 1fr)`;
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
         const cellButton = document.createElement("button");
         cellButton.classList.add("cell");
         cellButton.dataset.row = i;
         cellButton.dataset.column = j;
-        cellButton.textContent = cell;
         boardDiv.appendChild(cellButton);
-      });
-    });
+      }
+    }
   }
 
   const updateScreen = (cellButton) => {
@@ -143,11 +156,64 @@ function GameController(player1, player2) {
     const selectedColumn = cellButton.dataset.column;
     cellButton.textContent = board[+selectedRow][+selectedColumn];
     if (player1.marker === cellButton.textContent) {
-      cellButton.style.color = "var(--blue)";
+      cellButton.classList.add("blue");
     } else {
-      cellButton.style.color = "var(--orange)";
+      cellButton.classList.add("orange");
     }
+
+    turnDiv.textContent = `${game.getActivePlayer().name}'s turn.`;
   }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    
+    inputs.forEach(input => {
+      if (!input.value) {
+        input.value = input.getAttribute("value");
+      }
+    });
+
+    player1 = getPlayerFromDiv(player1Div);
+    player2 = getPlayerFromDiv(player2Div);
+
+    if (player1.name === player2.name) {
+      const name1Input = player1Div.querySelector('input[name="name"]');
+      name1Input.setCustomValidity("Player names must be different.");
+      name1Input.reportValidity();
+      return;
+    }
+    if (player1.marker === player2.marker) {
+      const marker2Input = player2Div.querySelector('input[name="marker"]');
+      marker2Input.setCustomValidity("Player markers must be different.");
+      marker2Input.reportValidity();
+      return;
+    }
+
+    size = +sizeDiv.value;
+    game = GameController(size, player1, player2);
+    board = game.board;
+
+    form.setAttribute("inert", "");
+    turnDiv.style.visibility = "visible";
+    turnDiv.textContent = `${game.getActivePlayer().name}'s turn.`;
+    createCells(size);
+  });
+
+  nameInputs.forEach(input => {
+    input.addEventListener("input", () => {
+      nameInputs.forEach(input => {
+        input.setCustomValidity("");
+      });
+    });
+  });
+
+  markerInputs.forEach(input => {
+    input.addEventListener("input", () => {
+      markerInputs.forEach(input => {
+        input.setCustomValidity("");
+      });
+    });
+  });
 
   boardDiv.addEventListener("click", (e) => {
     const selectedRow = e.target.dataset.row;
@@ -157,5 +223,5 @@ function GameController(player1, player2) {
     updateScreen(e.target);
   });
 
-  createCells();
+  createCells(3);
 })();

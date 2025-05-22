@@ -12,8 +12,8 @@
   <form>
     <div class="player-cards">
       <div class="player blue">
-        <input type="text" placeholder="Name" value="Player 1">
-        <input type="text" value="X" minlength="1" maxlength="1">
+        <input type="text" placeholder="Name" value="Player 1" name="name">
+        <input type="text" value="X" minlength="1" maxlength="1" name="marker">
         <select name="type" id="type">
           <option value="human">Human</option>
           <option value="ai-easy">AI - Easy</option>
@@ -21,8 +21,8 @@
         </select>
       </div>
       <div class="player orange">
-        <input type="text" placeholder="Name" value="Player 2">
-        <input type="text" value="O" minlength="1" maxlength="1">
+        <input type="text" placeholder="Name" value="Player 2" name="name">
+        <input type="text" value="O" minlength="1" maxlength="1" name="marker">
         <select name="type" id="type">
           <option value="human">Human</option>
           <option value="ai-easy">AI - Easy</option>
@@ -32,12 +32,12 @@
     </div>
     <div class="play">
       <label for="size">Select Board Size:</label>
-      <input type="number" value="3" min="1" max="5">
+      <input type="number" value="3" min="1" max="5" name="size">
       <button type="submit">PLAY!</button>
     </div>
   </form>
 
-  <div class="turn">turn.</div>
+  <div class="turn">Player 1's turn</div>
   <div class="board"></div>
 </body>
 </html>
