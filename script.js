@@ -1,5 +1,5 @@
 const Gameboard = (function() {
-  const size = 4;
+  const size = 3;
   const board = [];
 
   for (let i = 0; i < size; i++) {
@@ -98,10 +98,39 @@ function GameController(player1, player2) {
   console.log(board);
   console.log(`${player1.name}'s turn.`)
 
-  return { playRound };
+  return { board, getActivePlayer, playRound };
 }
 
-const game = GameController(
-  Player("Player 1", "X", "Human"),
-  Player("Player 2", "O", "Human")
-);
+(function displayController() {
+  const game = GameController(
+    Player("Player 1", "X", "Human"),
+    Player("Player 2", "O", "Human")
+  );
+  const board = game.board;
+  const boardDiv = document.querySelector(".board");
+
+  const updateScreen = () => {
+    boardDiv.textContent = "";
+
+    board.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        const cellButton = document.createElement("button");
+        cellButton.classList.add("cell");
+        cellButton.dataset.row = i;
+        cellButton.dataset.column = j;
+        cellButton.textContent = cell;
+        boardDiv.appendChild(cellButton);
+      });
+    });
+  }
+
+  boardDiv.addEventListener("click", (e) => {
+    const selectedRow = e.target.dataset.row;
+    const selectedColumn = e.target.dataset.column;
+
+    game.playRound([selectedRow, selectedColumn]);
+    updateScreen();
+  });
+
+  updateScreen();
+})();
