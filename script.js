@@ -39,16 +39,19 @@ function GameController(player1, player2) {
   }
 
   const getWinner = () => {
+    const X = player1.marker;
+    const O = player2.marker;
+
     // Check rows
     for (const row of board) {
-      if (row.every(cell => cell === "X")) return player1;
-      else if (row.every(cell => cell === "O")) return player2;
+      if (row.every(cell => cell === X)) return player1;
+      else if (row.every(cell => cell === O)) return player2;
     }
 
     // Check columns
     for (let i = 0; i < board.length; i++) {
-      if (board.every(row => row[i] === "X")) return player1;
-      else if (board.every(row => row[i] === "O")) return player2;
+      if (board.every(row => row[i] === X)) return player1;
+      else if (board.every(row => row[i] === O)) return player2;
     }
 
     // Check diagonals
@@ -59,8 +62,8 @@ function GameController(player1, player2) {
       diagonal2.push(board[i][board.length - 1 - i]);
     }
     for (const diagonal of [diagonal1, diagonal2]) {
-      if (diagonal.every(cell => cell === "X")) return player1;
-      else if (diagonal.every(cell => cell === "O")) return player2;
+      if (diagonal.every(cell => cell === X)) return player1;
+      else if (diagonal.every(cell => cell === O)) return player2;
     }
 
     // No winner: game in progress or tie
