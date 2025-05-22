@@ -58,11 +58,11 @@ h1 {
   padding: .5rem;
 }
 
-.player input:first-child {
+.player input[name="name"] {
   flex: 1;
 }
 
-.player input:nth-child(2) {
+.player input[name="marker"] {
   width: 2ch;
   text-align: center;
 }
