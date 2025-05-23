@@ -19,8 +19,6 @@ body {
   font-family: "varela_roundregular", sans-serif;
   background-color: var(--dark-primary);
   color: var(--purple);
-  position: relative;
-  height: 100vh;
 }
 
 h1 {
@@ -168,8 +166,9 @@ h1 {
 }
 
 .win {
+  height: 3ch;
   text-align: center;
   font-size: 2rem;
   font-weight: bold;
-  margin: 4rem 1rem 0;
+  margin: 3rem 1rem;
 }
