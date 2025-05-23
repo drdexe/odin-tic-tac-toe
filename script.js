@@ -83,6 +83,8 @@ function GameController(size, player1, player2) {
     return null;
   }
 
+  const isTerminal = () => getWinner() || getEmptyCellsCount() === 0;
+
   const playRound = action => {
     const [row, column] = action;
     // Ignore if action is illegal or game is over
@@ -98,12 +100,11 @@ function GameController(size, player1, player2) {
     gameboard.markCell(action, activePlayer.marker);
     console.log(board);
     
-    const winner = getWinner()
-    const isTerminal = winner !== null || getEmptyCellsCount() === 0;
+    const terminal = isTerminal();
     let turnText, winText;
 
-    if (isTerminal) {
-      if (winner !== null) winText = `${winner.name} wins!`;
+    if (terminal) {
+      if (typeof terminal === "object") winText = `${terminal.name} wins!`;
       else winText = "Tie!";
       console.log(winText);
     } else {
@@ -114,11 +115,55 @@ function GameController(size, player1, player2) {
     return [turnText, winText];
   }
 
+  const getRandomAction = actions => {
+    return actions[Math.floor(Math.random() * actions.length)];
+  }
+
   const playEasyComputerRound = () => {
-    const actions = getPossibleActions();
     // Select random legal move
-    const action = actions[Math.floor(Math.random() * actions.length)];
+    const action = getRandomAction(getPossibleActions())
     return [action, ...playRound(action)];
+  }
+
+  const getUtility = () => {
+    const winner = getWinner();
+    // Tie
+    if (!winner) return 0;
+    if (player1.marker === winner.marker) return 1;
+    else return -1;
+  }
+
+  const getResultingBoard = action => {
+    const [i, j] = action;
+    // Deep copy the board
+    const newBoard = board.map(row => row.slice());
+    newBoard[i][j] = getActivePlayer().marker;
+    return newBoard;
+  }
+
+  const minimax = () => {
+    // Returns the optimal action for the current player on the board
+    if (size === 3 && getEmptyCellsCount() === 9) {
+      // Hard code trickiest first move in standard Tic Tac Toe
+      return getRandomAction([[0, 0], [0, 2], [2, 0], [2, 2]]);  // Random corner
+    }
+
+    if (isTerminal()) return null;
+
+    if (getActivePlayer().marker === player1.marker) {
+      return Math.max(getPossibleActions().map(action => {
+        return (function min_value(board, a = -Infinity, b = Infinity) {
+          // Return minimum utility player 2 can guarantee from a board given optimal play
+          if (isTerminal()) return getUtility();
+          let v = Infinity;
+          for (action of getPossibleActions()) {
+
+          }
+        })(getResultingBoard(action));
+      }));
+    } else {
+
+    }
   }
 
   console.log(board);
@@ -188,10 +233,16 @@ function GameController(size, player1, player2) {
 
     // Diable form
     form.setAttribute("inert", "");
+
+    // Initialize turn div
     turnDiv.style.visibility = "visible";
     turnDiv.textContent = `${player1.name}'s turn.`;
+
     // Reset win div
     winDiv.textContent = "";
+    winDiv.classList.remove("blue");
+    winDiv.classList.remove("orange");
+    
     createCells(size);
   }
 
@@ -276,7 +327,15 @@ function GameController(size, player1, player2) {
     turnDiv.textContent = turnText;
     if (winText) {
       turnDiv.style.visibility = "hidden";
+
+      // Display results
       winDiv.textContent = winText;
+      if (winText.startsWith(player1.name)) {
+        winDiv.classList.add("blue");
+      } else if (winText.startsWith(player2.name)) {
+        winDiv.classList.add("orange");
+      }
+
       boardDiv.querySelectorAll(".cell").forEach(cellButton => {
         // Remove pointer cursor over board
         cellButton.style.cursor = "auto";
