@@ -1,6 +1,7 @@
 function Gameboard(size) {
   const board = [];
 
+  // Initialize size x size board
   for (let i = 0; i < size; i++) {
     board[i] = [];
     for (let j = 0; j < size; j++) {
@@ -35,6 +36,7 @@ function GameController(size, player1, player2) {
   }
 
   const getActivePlayer = () => {
+    // Deduce player based on number of markers
     const totalCellsCount = board.length ** 2;
     return (totalCellsCount - getEmptyCellsCount()) % 2 === 0 ? player1 : player2; 
   }
@@ -147,12 +149,15 @@ function GameController(size, player1, player2) {
       for (let j = 0; j < size; j++) {
         const cellButton = document.createElement("button");
         cellButton.classList.add("cell");
+        // Create data attributes to identify cell
         cellButton.dataset.row = i;
         cellButton.dataset.column = j;
 
+        // Adjust font size to fit board
         cellButton.style.fontSize = `${8 - size}rem`;
         if (game) cellButton.style.cursor = "pointer";
 
+        // Add highlighting effect on hover
         cellButton.addEventListener("mouseenter", e => {
           if (board[i][j] !== "" || game.getWinner()) return;
           if (player1.marker === game.getActivePlayer().marker) {
@@ -172,6 +177,7 @@ function GameController(size, player1, player2) {
   }
 
   const updateScreen = (cellButton, turnText, winText) => {
+    // Only update cell clicked
     const selectedRow = cellButton.dataset.row;
     const selectedColumn = cellButton.dataset.column;
     cellButton.textContent = board[+selectedRow][+selectedColumn];
@@ -181,13 +187,16 @@ function GameController(size, player1, player2) {
       cellButton.classList.add("orange");
     }
 
+    // Update turn
     turnDiv.textContent = turnText;
     if (winText) {
       turnDiv.style.visibility = "hidden";
       winDiv.textContent = winText;
       boardDiv.querySelectorAll(".cell").forEach(cellButton => {
+        // Remove pointer cursor over board
         cellButton.style.cursor = "auto";
       });
+      // Enable form
       form.removeAttribute("inert");
     }
   }
@@ -196,6 +205,7 @@ function GameController(size, player1, player2) {
     e.preventDefault();
     
     inputs.forEach(input => {
+      // Replace empty inputs with default values
       if (!input.value) {
         input.value = input.getAttribute("value");
       }
@@ -204,6 +214,7 @@ function GameController(size, player1, player2) {
     player1 = getPlayerFromDiv(player1Div);
     player2 = getPlayerFromDiv(player2Div);
 
+    // Prevent identical names or markers
     if (player1.name === player2.name) {
       const name1Input = player1Div.querySelector('input[name="name"]');
       name1Input.setCustomValidity("Player names must be different.");
@@ -221,13 +232,16 @@ function GameController(size, player1, player2) {
     game = GameController(size, player1, player2);
     board = game.board;
 
+    // Diable form
     form.setAttribute("inert", "");
     turnDiv.style.visibility = "visible";
     turnDiv.textContent = `${game.getActivePlayer().name}'s turn.`;
+    // Reset win div
     winDiv.textContent = "";
     createCells(size);
   });
 
+  // Remove custom form errors on identical inputs when either changes
   nameInputs.forEach(input => {
     input.addEventListener("input", () => {
       nameInputs.forEach(input => {
@@ -255,5 +269,6 @@ function GameController(size, player1, player2) {
     updateScreen(e.target, turnText, winText);
   });
 
+  // Display initial default board
   createCells(3);
 })();

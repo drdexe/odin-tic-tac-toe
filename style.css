@@ -133,6 +133,7 @@ h1 {
 }
 
 .board::after {
+  /* Cover outer border */
   position: absolute;
   content: "";
   height: 100%;
@@ -162,11 +163,11 @@ h1 {
 }
 
 .blue-hover:hover {
-  background-color: #34c3be80;
+  background-color: color-mix(in srgb, var(--blue), transparent 50%);
 }
 
 .orange-hover:hover {
-  background-color: #f2b13880;
+  background-color: color-mix(in srgb, var(--orange), transparent 50%);
 }
 
 .win {
