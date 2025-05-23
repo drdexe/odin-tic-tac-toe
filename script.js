@@ -83,7 +83,7 @@ function GameController(size, player1, player2) {
     return null;
   }
 
-  const playRound = (action) => {
+  const playRound = action => {
     const [row, column] = action;
     // Ignore if action is illegal or game is over
     if (!getPossibleActions()
@@ -114,10 +114,24 @@ function GameController(size, player1, player2) {
     return [turnText, winText];
   }
 
+  const playEasyComputerRound = () => {
+    const actions = getPossibleActions();
+    // Select random legal move
+    const action = actions[Math.floor(Math.random() * actions.length)];
+    return [action, ...playRound(action)];
+  }
+
   console.log(board);
   console.log(`${player1.name}'s turn.`)
 
-  return { board, getEmptyCellsCount, getActivePlayer, getWinner, playRound };
+  return { 
+    board,
+    getEmptyCellsCount,
+    getActivePlayer,
+    getWinner,
+    playRound,
+    playEasyComputerRound,
+  };
 }
 
 (function displayController() {
@@ -141,67 +155,7 @@ function GameController(size, player1, player2) {
     return Player(name, marker, type);
   }
 
-  const createCells = size => {
-    boardDiv.textContent = "";
-    boardDiv.style.gridTemplate = `repeat(${size}, 1fr) / repeat(${size}, 1fr)`;
-
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        const cellButton = document.createElement("button");
-        cellButton.classList.add("cell");
-        // Create data attributes to identify cell
-        cellButton.dataset.row = i;
-        cellButton.dataset.column = j;
-
-        // Adjust font size to fit board
-        cellButton.style.fontSize = `${8 - size}rem`;
-        if (game) cellButton.style.cursor = "pointer";
-
-        // Add highlighting effect on hover
-        cellButton.addEventListener("mouseenter", e => {
-          if (board[i][j] !== "" || game.getWinner()) return;
-          if (player1.marker === game.getActivePlayer().marker) {
-            cellButton.classList.add("blue-hover");
-          } else {
-            cellButton.classList.add("orange-hover");
-          }
-        });
-        cellButton.addEventListener("mouseleave", e => {
-          cellButton.classList.remove("blue-hover");
-          cellButton.classList.remove("orange-hover");
-        });
-
-        boardDiv.appendChild(cellButton);
-      }
-    }
-  }
-
-  const updateScreen = (cellButton, turnText, winText) => {
-    // Only update cell clicked
-    const selectedRow = cellButton.dataset.row;
-    const selectedColumn = cellButton.dataset.column;
-    cellButton.textContent = board[+selectedRow][+selectedColumn];
-    if (player1.marker === cellButton.textContent) {
-      cellButton.classList.add("blue");
-    } else {
-      cellButton.classList.add("orange");
-    }
-
-    // Update turn
-    turnDiv.textContent = turnText;
-    if (winText) {
-      turnDiv.style.visibility = "hidden";
-      winDiv.textContent = winText;
-      boardDiv.querySelectorAll(".cell").forEach(cellButton => {
-        // Remove pointer cursor over board
-        cellButton.style.cursor = "auto";
-      });
-      // Enable form
-      form.removeAttribute("inert");
-    }
-  }
-
-  form.addEventListener("submit", e => {
+  function handleFromSubmit(e) {
     e.preventDefault();
     
     inputs.forEach(input => {
@@ -235,39 +189,126 @@ function GameController(size, player1, player2) {
     // Diable form
     form.setAttribute("inert", "");
     turnDiv.style.visibility = "visible";
-    turnDiv.textContent = `${game.getActivePlayer().name}'s turn.`;
+    turnDiv.textContent = `${player1.name}'s turn.`;
     // Reset win div
     winDiv.textContent = "";
     createCells(size);
-  });
+  }
 
-  // Remove custom form errors on identical inputs when either changes
-  nameInputs.forEach(input => {
-    input.addEventListener("input", () => {
-      nameInputs.forEach(input => {
-        input.setCustomValidity("");
+  const handleFormErrorReset = inputs => {
+    // Remove custom form errors on identical inputs when either changes
+    inputs.forEach(input => {
+      input.addEventListener("input", () => {
+        inputs.forEach(input => {
+          input.setCustomValidity("");
+        });
       });
     });
-  });
+  }
 
-  markerInputs.forEach(input => {
-    input.addEventListener("input", () => {
-      markerInputs.forEach(input => {
-        input.setCustomValidity("");
+  const addPlayerHover = cellButton => {
+    // Add highlighting effect on hover for human players
+    const row = cellButton.dataset.row;
+    const column = cellButton.dataset.column;
+    const activePlayer = game.getActivePlayer();
+
+    if (
+      board[+row][+column] !== ""
+      || activePlayer.type !== "human"
+      || game.getWinner()
+    ) return;
+
+    if (player1.marker === activePlayer.marker) {
+      cellButton.classList.add("blue-hover");
+    } else if (player2.marker === activePlayer.marker) {
+      cellButton.classList.add("orange-hover");
+    }
+  }
+
+  const removePlayerHover = cellButton => {
+    cellButton.classList.remove("blue-hover");
+    cellButton.classList.remove("orange-hover");
+  }
+
+  const createCells = size => {
+    boardDiv.textContent = "";
+    boardDiv.style.gridTemplate = `repeat(${size}, 1fr) / repeat(${size}, 1fr)`;
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        const cellButton = document.createElement("button");
+        cellButton.classList.add("cell");
+        // Create data attributes to identify cell
+        cellButton.dataset.row = i;
+        cellButton.dataset.column = j;
+
+        // Adjust font size to fit board
+        cellButton.style.fontSize = `${8 - size}rem`;
+        if (game) cellButton.style.cursor = "pointer";
+
+        // Add highlighting effect on hover
+        cellButton.addEventListener("mouseover", () => {
+          addPlayerHover(cellButton);
+        });
+        cellButton.addEventListener("mouseleave", () => {
+          removePlayerHover(cellButton);
+        });
+
+        boardDiv.appendChild(cellButton);
+      }
+    }
+  }
+
+  const updateScreen = (action, turnText, winText) => {
+    // Only update cell clicked
+    const [row, column] = action;
+    const cellButton = boardDiv.querySelector(
+      `.cell[data-row="${row}"][data-column="${column}"]`
+    );
+    cellButton.textContent = board[row][column];
+    if (player1.marker === cellButton.textContent) {
+      cellButton.classList.add("blue");
+    } else {
+      cellButton.classList.add("orange");
+    }
+
+    // Update turn
+    turnDiv.textContent = turnText;
+    if (winText) {
+      turnDiv.style.visibility = "hidden";
+      winDiv.textContent = winText;
+      boardDiv.querySelectorAll(".cell").forEach(cellButton => {
+        // Remove pointer cursor over board
+        cellButton.style.cursor = "auto";
       });
-    });
-  });
+      // Enable form
+      form.removeAttribute("inert");
+    }
+  }
 
-  boardDiv.addEventListener("click", e => {
+  function onBoardClick(e) {
     const selectedRow = e.target.dataset.row;
     const selectedColumn = e.target.dataset.column;
+    const action = [+selectedRow, +selectedColumn];
 
-    e.target.classList.remove("blue-hover");
-    e.target.classList.remove("orange-hover");
+    switch (game.getActivePlayer().type) {
+      case "human":
+        updateScreen(action, ...game.playRound(action));
+        removePlayerHover(e.target);
+        break;
+      case "ai-easy":
+        updateScreen(...game.playEasyComputerRound());
+        addPlayerHover(e.target);
+        break;
+    }
+  }
 
-    const [turnText, winText] = game.playRound([+selectedRow, +selectedColumn]);
-    updateScreen(e.target, turnText, winText);
-  });
+  form.addEventListener("submit", handleFromSubmit);
+
+  handleFormErrorReset(nameInputs);
+  handleFormErrorReset(markerInputs);
+
+  boardDiv.addEventListener("click", onBoardClick);
 
   // Display initial default board
   createCells(3);
