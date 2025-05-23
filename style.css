@@ -103,6 +103,7 @@ h1 {
 .play button {
   font: inherit;
   font-size: 1.5rem;
+  vertical-align: middle;
   padding: 1rem;
   border: none;
   border-radius: 1rem;
