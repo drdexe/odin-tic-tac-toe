@@ -414,11 +414,9 @@ function GameController(size, player1, player2) {
         break;
       case "ai-easy":
         updateScreen(...game.playEasyComputerRound(board));
-        addPlayerHover(e.target);
         break;
       case "ai-hard":
         updateScreen(...game.playHardComputerRound(board));
-        addPlayerHover(e.target);
         break;
     }
   }
