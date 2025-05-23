@@ -128,8 +128,8 @@ h1 {
 .board {
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  height: 500px;
-  width: 500px;
+  width: min(100%, 500px);
+  aspect-ratio: 1;
   margin: 0 auto;
   position: relative;
 }
