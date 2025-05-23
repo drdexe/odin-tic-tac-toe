@@ -27,21 +27,22 @@ function Player(name, marker, type) {
 
 function GameController(size, player1, player2) {
   const gameboard = Gameboard(size);
-  const board = gameboard.getBoard();
 
-  const getEmptyCellsCount = () => {
+  const getBoard = () => gameboard.getBoard();
+
+  const getEmptyCellsCount = board => {
     return board
       .flat()
       .filter(cell => cell === "").length;
   }
 
-  const getActivePlayer = () => {
+  const getActivePlayer = board => {
     // Deduce player based on number of markers
     const totalCellsCount = board.length ** 2;
-    return (totalCellsCount - getEmptyCellsCount()) % 2 === 0 ? player1 : player2; 
+    return (totalCellsCount - getEmptyCellsCount(board)) % 2 === 0 ? player1 : player2; 
   }
 
-  const getPossibleActions = () => {
+  const getPossibleActions = board => {
     const actions = [];
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board.length; j++) {
@@ -51,7 +52,7 @@ function GameController(size, player1, player2) {
     return actions;
   }
 
-  const getWinner = () => {
+  const getWinner = board => {
     const X = player1.marker;
     const O = player2.marker;
 
@@ -83,24 +84,24 @@ function GameController(size, player1, player2) {
     return null;
   }
 
-  const isTerminal = () => getWinner() || getEmptyCellsCount() === 0;
+  const isTerminal = board => getWinner(board) || getEmptyCellsCount(board) === 0;
 
-  const playRound = action => {
+  const playRound = (board, action) => {
     const [row, column] = action;
     // Ignore if action is illegal or game is over
-    if (!getPossibleActions()
+    if (!getPossibleActions(board)
       .some(arr => arr[0] === row && arr[1] === column)
-      || getWinner()
+      || getWinner(board)
     ) return;
 
-    const activePlayer = getActivePlayer();
+    const activePlayer = getActivePlayer(board);
     console.log(
       `Marking '${activePlayer.marker}' at row ${row}, column ${column}...`
     );
     gameboard.markCell(action, activePlayer.marker);
     console.log(board);
     
-    const terminal = isTerminal();
+    const terminal = isTerminal(board);
     let turnText, winText;
 
     if (terminal) {
@@ -108,7 +109,7 @@ function GameController(size, player1, player2) {
       else winText = "Tie!";
       console.log(winText);
     } else {
-      turnText = `${getActivePlayer().name}'s turn.`;
+      turnText = `${getActivePlayer(board).name}'s turn.`;
       console.log(turnText);
     }
 
@@ -119,63 +120,114 @@ function GameController(size, player1, player2) {
     return actions[Math.floor(Math.random() * actions.length)];
   }
 
-  const playEasyComputerRound = () => {
+  const playEasyComputerRound = board => {
     // Select random legal move
-    const action = getRandomAction(getPossibleActions())
-    return [action, ...playRound(action)];
+    const action = getRandomAction(getPossibleActions(board))
+    return [action, ...playRound(board, action)];
   }
 
-  const getUtility = () => {
-    const winner = getWinner();
+  const getUtility = board => {
+    const winner = getWinner(board);
     // Tie
     if (!winner) return 0;
     if (player1.marker === winner.marker) return 1;
     else return -1;
   }
 
-  const getResultingBoard = action => {
+  const getResultingBoard = (board, action) => {
     const [i, j] = action;
     // Deep copy the board
     const newBoard = board.map(row => row.slice());
-    newBoard[i][j] = getActivePlayer().marker;
+    newBoard[i][j] = getActivePlayer(board).marker;
     return newBoard;
   }
 
-  const minimax = () => {
-    // Returns the optimal action for the current player on the board
-    if (size === 3 && getEmptyCellsCount() === 9) {
+  const minimax = board => {
+    // Returns the optimal action(s) for the current player on the board
+    if (size === 3 && getEmptyCellsCount(board) === 9) {
       // Hard code trickiest first move in standard Tic Tac Toe
       return getRandomAction([[0, 0], [0, 2], [2, 0], [2, 2]]);  // Random corner
     }
 
-    if (isTerminal()) return null;
+    if (isTerminal(board)) return null;
 
-    if (getActivePlayer().marker === player1.marker) {
-      return Math.max(getPossibleActions().map(action => {
-        return (function min_value(board, a = -Infinity, b = Infinity) {
-          // Return minimum utility player 2 can guarantee from a board given optimal play
-          if (isTerminal()) return getUtility();
-          let v = Infinity;
-          for (action of getPossibleActions()) {
+    const maximizing = player1.marker === getActivePlayer(board).marker;
+    let bestValue = maximizing ? -Infinity : Infinity;
+    let bestActions = [];
 
-          }
-        })(getResultingBoard(action));
-      }));
-    } else {
+    for (const action of getPossibleActions(board)) {
+      const newBoard = getResultingBoard(board, action);
+      let value;
+      if (maximizing) {
+        value = minValue(newBoard);
+        if (value > bestValue) {
+          bestValue = value;
+          bestActions = [action];
+        } else if (value === bestValue) {
+          bestActions.push(action);
+        }
+      } else {
+        value = maxValue(newBoard);
+        if (value < bestValue) {
+          bestValue = value;
+          bestActions = [action];
+        } else if (value === bestValue) {
+          bestActions.push(action);
+        }
+      }
+    }
+    return bestActions;
 
+    function maxValue(board, a = -Infinity, b = Infinity) {
+      // Return maximum utility player 1 can guarantee from a board given optimal play
+      if (isTerminal(board)) return getUtility(board);
+      let v = -Infinity;
+      for (const action of getPossibleActions(board)) {
+        v = Math.max(v, minValue(getResultingBoard(board, action), a, b));
+        a = Math.max(a, v);
+        // Prune if player 1 can at least guarantee value of a
+        if (a >= b) break;
+      }
+      return v;
+    }
+
+    function minValue(board, a = -Infinity, b = Infinity) {
+      // Return minimum utility player 2 can guarantee from a board given optimal play
+      if (isTerminal(board)) return getUtility(board);
+      let v = Infinity;
+      for (const action of getPossibleActions(board)) {
+        v = Math.min(v, maxValue(getResultingBoard(board, action), a, b));
+        b = Math.min(b, v);
+        // Prune if player 2 can at least guarantee value of b
+        if (a >= b) break;
+      }
+      return v;
     }
   }
 
-  console.log(board);
+  const playHardComputerRound = board => {
+    let action;
+    if (size === 3 && getEmptyCellsCount(board) === 9) {
+      // Hard code trickiest first move in standard Tic Tac Toe
+      action = getRandomAction([[0, 0], [0, 2], [2, 0], [2, 2]]);  // Random corner
+    } else {
+      // Choose best action randomly
+      action = getRandomAction(minimax(board));
+    }
+    return [action, ...playRound(board, action)];
+  }
+
+  console.log(getBoard());
   console.log(`${player1.name}'s turn.`)
 
   return { 
-    board,
+    getBoard,
     getEmptyCellsCount,
     getActivePlayer,
     getWinner,
     playRound,
     playEasyComputerRound,
+    playHardComputerRound,
   };
 }
 
@@ -200,7 +252,7 @@ function GameController(size, player1, player2) {
     return Player(name, marker, type);
   }
 
-  function handleFromSubmit(e) {
+  function handleFormSubmit(e) {
     e.preventDefault();
     
     inputs.forEach(input => {
@@ -228,8 +280,13 @@ function GameController(size, player1, player2) {
     }
 
     size = +sizeDiv.value;
+    if (size > 3 && (player1.type === "ai-hard" || player2.type === "ai-hard")) {
+      alert("AI - Hard is disabled for larger boards!");
+      return;
+    }
+
     game = GameController(size, player1, player2);
-    board = game.board;
+    board = game.getBoard();
 
     // Diable form
     form.setAttribute("inert", "");
@@ -242,7 +299,7 @@ function GameController(size, player1, player2) {
     winDiv.textContent = "";
     winDiv.classList.remove("blue");
     winDiv.classList.remove("orange");
-    
+
     createCells(size);
   }
 
@@ -261,12 +318,12 @@ function GameController(size, player1, player2) {
     // Add highlighting effect on hover for human players
     const row = cellButton.dataset.row;
     const column = cellButton.dataset.column;
-    const activePlayer = game.getActivePlayer();
+    const activePlayer = game.getActivePlayer(board);
 
     if (
       board[+row][+column] !== ""
       || activePlayer.type !== "human"
-      || game.getWinner()
+      || game.getWinner(board)
     ) return;
 
     if (player1.marker === activePlayer.marker) {
@@ -350,19 +407,23 @@ function GameController(size, player1, player2) {
     const selectedColumn = e.target.dataset.column;
     const action = [+selectedRow, +selectedColumn];
 
-    switch (game.getActivePlayer().type) {
+    switch (game.getActivePlayer(board).type) {
       case "human":
-        updateScreen(action, ...game.playRound(action));
+        updateScreen(action, ...game.playRound(board, action));
         removePlayerHover(e.target);
         break;
       case "ai-easy":
-        updateScreen(...game.playEasyComputerRound());
+        updateScreen(...game.playEasyComputerRound(board));
+        addPlayerHover(e.target);
+        break;
+      case "ai-hard":
+        updateScreen(...game.playHardComputerRound(board));
         addPlayerHover(e.target);
         break;
     }
   }
 
-  form.addEventListener("submit", handleFromSubmit);
+  form.addEventListener("submit", handleFormSubmit);
 
   handleFormErrorReset(nameInputs);
   handleFormErrorReset(markerInputs);
