@@ -28,6 +28,8 @@ body {
   font-family: "varela_roundregular", sans-serif;
   background-color: var(--dark-primary);
   color: var(--purple);
+  position: relative;
+  height: 100vh;
 }
 
 h1 {
@@ -112,6 +114,7 @@ h1 {
 .turn {
   visibility: hidden;
   width: 300px;
+  height: 1.5ch;
   margin: 5rem auto 2.5rem;
   padding: 1rem;
   border-radius: .5rem;
@@ -145,15 +148,9 @@ h1 {
   justify-content: center;
   align-items: center;
   text-align: center;
-  font-size: 5rem;
   background-color: var(--dark-primary);;
   border: 5px solid gray;
-  cursor: pointer;
   user-select: none;
-}
-
-.cell:hover {
-  background-color: var(--dark-secondary);
 }
 
 .cell.blue {
@@ -162,4 +159,19 @@ h1 {
 
 .cell.orange {
   color: var(--orange);
+}
+
+.blue-hover:hover {
+  background-color: #34c3be80;
+}
+
+.orange-hover:hover {
+  background-color: #f2b13880;
+}
+
+.win {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 5rem 1rem;
 }

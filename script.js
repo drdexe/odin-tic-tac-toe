@@ -98,22 +98,24 @@ function GameController(size, player1, player2) {
     
     const winner = getWinner()
     const isTerminal = winner !== null || getEmptyCellsCount() === 0;
+    let turnText, winText;
 
     if (isTerminal) {
-      if (winner !== null) {
-        console.log(`${winner.name} wins!`);
-      } else {
-        console.log("Tie!");
-      }
+      if (winner !== null) winText = `${winner.name} wins!`;
+      else winText = "Tie!";
+      console.log(winText);
     } else {
-      console.log(`${getActivePlayer().name}'s turn.`)
+      turnText = `${getActivePlayer().name}'s turn.`;
+      console.log(turnText);
     }
+
+    return [turnText, winText];
   }
 
   console.log(board);
   console.log(`${player1.name}'s turn.`)
 
-  return { board, getActivePlayer, playRound };
+  return { board, getEmptyCellsCount, getActivePlayer, getWinner, playRound };
 }
 
 (function displayController() {
@@ -126,6 +128,7 @@ function GameController(size, player1, player2) {
   const markerInputs = form.querySelectorAll('input[name="marker"]');
   const turnDiv = document.querySelector(".turn");
   const boardDiv = document.querySelector(".board");
+  const winDiv = document.querySelector(".win");
 
   let player1, player2, size, game, board;
 
@@ -146,12 +149,29 @@ function GameController(size, player1, player2) {
         cellButton.classList.add("cell");
         cellButton.dataset.row = i;
         cellButton.dataset.column = j;
+
+        cellButton.style.fontSize = `${8 - size}rem`;
+        if (game) cellButton.style.cursor = "pointer";
+
+        cellButton.addEventListener("mouseenter", e => {
+          if (board[i][j] !== "" || game.getWinner()) return;
+          if (player1.marker === game.getActivePlayer().marker) {
+            cellButton.classList.add("blue-hover");
+          } else {
+            cellButton.classList.add("orange-hover");
+          }
+        });
+        cellButton.addEventListener("mouseleave", e => {
+          cellButton.classList.remove("blue-hover");
+          cellButton.classList.remove("orange-hover");
+        });
+
         boardDiv.appendChild(cellButton);
       }
     }
   }
 
-  const updateScreen = (cellButton) => {
+  const updateScreen = (cellButton, turnText, winText) => {
     const selectedRow = cellButton.dataset.row;
     const selectedColumn = cellButton.dataset.column;
     cellButton.textContent = board[+selectedRow][+selectedColumn];
@@ -161,7 +181,15 @@ function GameController(size, player1, player2) {
       cellButton.classList.add("orange");
     }
 
-    turnDiv.textContent = `${game.getActivePlayer().name}'s turn.`;
+    turnDiv.textContent = turnText;
+    if (winText) {
+      turnDiv.style.visibility = "hidden";
+      winDiv.textContent = winText;
+      boardDiv.querySelectorAll(".cell").forEach(cellButton => {
+        cellButton.style.cursor = "auto";
+      });
+      form.removeAttribute("inert");
+    }
   }
 
   form.addEventListener("submit", e => {
@@ -196,6 +224,7 @@ function GameController(size, player1, player2) {
     form.setAttribute("inert", "");
     turnDiv.style.visibility = "visible";
     turnDiv.textContent = `${game.getActivePlayer().name}'s turn.`;
+    winDiv.textContent = "";
     createCells(size);
   });
 
@@ -215,12 +244,15 @@ function GameController(size, player1, player2) {
     });
   });
 
-  boardDiv.addEventListener("click", (e) => {
+  boardDiv.addEventListener("click", e => {
     const selectedRow = e.target.dataset.row;
     const selectedColumn = e.target.dataset.column;
 
-    game.playRound([+selectedRow, +selectedColumn]);
-    updateScreen(e.target);
+    e.target.classList.remove("blue-hover");
+    e.target.classList.remove("orange-hover");
+
+    const [turnText, winText] = game.playRound([+selectedRow, +selectedColumn]);
+    updateScreen(e.target, turnText, winText);
   });
 
   createCells(3);
