@@ -67,10 +67,12 @@ h1 {
 .player input[name="marker"] {
   width: 2ch;
   text-align: center;
+  font-weight: bold;
 }
 
 .player select {
   width: 100%;
+  color: black;
 }
 
 .player.blue {
@@ -145,6 +147,7 @@ h1 {
 
 .cell {
   font: inherit;
+  font-weight: bolder;
   display: flex;
   justify-content: center;
   align-items: center;
