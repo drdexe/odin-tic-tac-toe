@@ -9,12 +9,12 @@
 2. Human vs Computer
 3. Computer vs Computer
 
-AI - easy makes random moves while AI - hard uses minimax to choose a random best move.
+AI - Easy makes random moves while AI - Hard uses minimax to choose a random best move.
 #### Features
 - Customise player name
 - Customise player marker (any character)
 - Change board size (1-5)
 
-Due to computational limits, AI - hard is disabled on 4x4 and 5x5 boards.
+Due to computational limits, AI - Hard is disabled on 4x4 and 5x5 boards.
 
 *Note: Click anywhere on the board to make the computer's move.*
